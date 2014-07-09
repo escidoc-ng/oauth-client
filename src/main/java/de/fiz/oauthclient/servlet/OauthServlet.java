@@ -31,6 +31,7 @@ import org.apache.http.NameValuePair;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
@@ -39,6 +40,7 @@ import org.apache.oltu.oauth2.client.request.OAuthClientRequest;
 import org.apache.oltu.oauth2.client.response.OAuthAuthzResponse;
 import org.apache.oltu.oauth2.common.exception.OAuthProblemException;
 import org.apache.oltu.oauth2.common.exception.OAuthSystemException;
+import org.json.JSONObject;
 
 /**
  * @author mih
@@ -48,10 +50,10 @@ public class OauthServlet extends HttpServlet {
     @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response)
             throws IOException {
-        String clientId = "larch";
+        String clientId = "larch_admin";
         String clientSecret = "secret";
 
-        if (request.getParameter("method").equals("eins")) {
+        if (request.getParameter("method").equals("login")) {
             try {
                 OAuthClientRequest oauthRequest = OAuthClientRequest
                         .authorizationLocation("http://localhost:8080/oauth/authorize")
@@ -87,19 +89,37 @@ public class OauthServlet extends HttpServlet {
                 CloseableHttpResponse response2 = httpclient.execute(httpPost);
 
                 String test = null;
+                String token = null;
                 try {
                     System.out.println(response2.getStatusLine());
                     HttpEntity entity2 = response2.getEntity();
                     test = EntityUtils.toString(entity2);
-                    System.out.println(test);
+                    JSONObject obj = new JSONObject(test);
+                    token = obj.getString("access_token");
                 } finally {
                     response2.close();
                 }
 
+                String entity = "{\"label\" : \"Unnamed entity\"}";
+
+                httpPost = new HttpPost("http://localhost:8080/entity");
+                httpPost.setEntity(new StringEntity(entity));
+                httpPost.setHeader("Accept", "application/json");
+                httpPost.setHeader("Content-type", "application/json; charset=UTF-8");
+
+                authorization = "Bearer:" + token;
+                encodedBytes = Base64.encodeBase64(authorization.getBytes());
+                authorization = "Basic " + new String(encodedBytes);
+                httpPost.setHeader("Authorization", authorization);
+                response2 = httpclient.execute(httpPost);
+                HttpEntity entity2 = response2.getEntity();
+                test = EntityUtils.toString(entity2);
+                System.out.println(test);
+
                 PrintWriter out = response.getWriter();
                 out.println("<html>");
                 out.println("<body>");
-                out.println(test);
+                out.println(token);
                 out.println("</body>");
                 out.println("</html>");
             } catch (OAuthProblemException e) {
