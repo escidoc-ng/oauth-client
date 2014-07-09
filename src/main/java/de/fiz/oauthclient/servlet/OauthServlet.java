@@ -59,7 +59,7 @@ public class OauthServlet extends HttpServlet {
                         .authorizationLocation("http://localhost:8080/oauth/authorize")
                         .setClientId(clientId)
                         .setResponseType("code")
-                        .setRedirectURI("http://localhost:8088/oauthclient/oauth?method=zwei")
+                        .setRedirectURI("http://localhost:8088/oauthclient/oauth?method=token")
                         .buildQueryMessage();
                 response.sendRedirect(oauthRequest.getLocationUri());
 
@@ -67,7 +67,7 @@ public class OauthServlet extends HttpServlet {
                 throw new IOException(e.getMessage());
             }
         }
-        else if (request.getParameter("method").equals("zwei")) {
+        else if (request.getParameter("method").equals("token")) {
             try {
                 OAuthAuthzResponse oar = OAuthAuthzResponse.oauthCodeAuthzResponse(request);
                 String code = oar.getCode();
@@ -79,7 +79,8 @@ public class OauthServlet extends HttpServlet {
                 nvps.add(new BasicNameValuePair("client_id", clientId));
                 nvps.add(new BasicNameValuePair("client_secret", clientSecret));
                 nvps.add(new BasicNameValuePair("code", code));
-                nvps.add(new BasicNameValuePair("redirect_uri", "http://localhost:8088/oauthclient/oauth?method=zwei"));
+                nvps.add(new BasicNameValuePair("redirect_uri",
+                        "http://localhost:8088/oauthclient/oauth?method=token"));
                 httpPost.setEntity(new UrlEncodedFormEntity(nvps));
                 String authorization = clientId + ":" + clientSecret;
                 byte[] encodedBytes;
@@ -104,7 +105,6 @@ public class OauthServlet extends HttpServlet {
 
                 httpPost = new HttpPost("http://localhost:8080/entity");
                 httpPost.setEntity(new StringEntity(entity));
-                httpPost.setHeader("Accept", "application/json");
                 httpPost.setHeader("Content-type", "application/json; charset=UTF-8");
 
                 authorization = "Bearer:" + token;
