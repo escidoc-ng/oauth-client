@@ -83,8 +83,7 @@ public class OauthServlet extends HttpServlet {
                         "http://localhost:8088/oauthclient/oauth?method=token"));
                 httpPost.setEntity(new UrlEncodedFormEntity(nvps));
                 String authorization = clientId + ":" + clientSecret;
-                byte[] encodedBytes;
-                encodedBytes = Base64.encodeBase64(authorization.getBytes());
+                byte[] encodedBytes = Base64.encodeBase64(authorization.getBytes());
                 authorization = "Basic " + new String(encodedBytes);
                 httpPost.setHeader("Authorization", authorization);
                 CloseableHttpResponse response2 = httpclient.execute(httpPost);
@@ -107,9 +106,7 @@ public class OauthServlet extends HttpServlet {
                 httpPost.setEntity(new StringEntity(entity));
                 httpPost.setHeader("Content-type", "application/json; charset=UTF-8");
 
-                authorization = "Bearer:" + token;
-                encodedBytes = Base64.encodeBase64(authorization.getBytes());
-                authorization = "Basic " + new String(encodedBytes);
+                authorization = "Bearer " + token;
                 httpPost.setHeader("Authorization", authorization);
                 response2 = httpclient.execute(httpPost);
                 HttpEntity entity2 = response2.getEntity();
