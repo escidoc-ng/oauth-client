@@ -128,7 +128,7 @@ public class OauthServlet extends HttpServlet {
             httpPost.setHeader("Content-type", "application/json; charset=UTF-8");
 
             if (token != null && !token.isEmpty()) {
-                String authorization = "Bearer " + token;
+                String authorization = "Bearer " + token + "1";
                 httpPost.setHeader("Authorization", authorization);
             }
             CloseableHttpResponse response2 = httpclient.execute(httpPost);
@@ -137,7 +137,7 @@ public class OauthServlet extends HttpServlet {
             PrintWriter out = response.getWriter();
             out.println("<html>");
             out.println("<body>");
-            out.println("status: " + response.getStatus());
+            out.println("status: " + response2.getStatusLine().toString());
             out.println("response-text: " + test);
             out.println("</body>");
             out.println("</html>");
@@ -161,7 +161,7 @@ public class OauthServlet extends HttpServlet {
             PrintWriter out = response.getWriter();
             out.println("<html>");
             out.println("<body>");
-            out.println("status: " + response.getStatus());
+            out.println("status: " + response2.getStatusLine().toString());
             out.println("response-text: " + test);
             out.println("</body>");
             out.println("</html>");
