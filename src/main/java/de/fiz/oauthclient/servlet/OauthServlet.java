@@ -51,16 +51,20 @@ public class OauthServlet extends HttpServlet {
     @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response)
             throws IOException {
+        String baseUrl = "http://localhost:8080";
+        String selfUrl = "http://localhost:8088";
+        String selfContext = "/oauthclient";
         String clientId = "larch_admin";
         String clientSecret = "secret";
+        String accessTokenAttributeName = "access-token";
 
         if (request.getParameter("method").equals("login")) {
             try {
                 OAuthClientRequest oauthRequest = OAuthClientRequest
-                        .authorizationLocation("http://localhost:8080/oauth/authorize")
+                        .authorizationLocation(baseUrl + "/oauth/authorize")
                         .setClientId(clientId)
                         .setResponseType("code")
-                        .setRedirectURI("http://localhost:8088/oauthclient/oauth?method=token")
+                        .setRedirectURI(selfUrl + selfContext + "/oauth?method=token")
                         .buildQueryMessage();
                 response.sendRedirect(oauthRequest.getLocationUri());
 
@@ -74,14 +78,14 @@ public class OauthServlet extends HttpServlet {
                 String code = oar.getCode();
 
                 CloseableHttpClient httpclient = HttpClients.createDefault();
-                HttpPost httpPost = new HttpPost("http://localhost:8080/oauth/token");
+                HttpPost httpPost = new HttpPost(baseUrl + "/oauth/token");
                 List<NameValuePair> nvps = new ArrayList<NameValuePair>();
                 nvps.add(new BasicNameValuePair("grant_type", "authorization_code"));
                 nvps.add(new BasicNameValuePair("client_id", clientId));
                 nvps.add(new BasicNameValuePair("client_secret", clientSecret));
                 nvps.add(new BasicNameValuePair("code", code));
                 nvps.add(new BasicNameValuePair("redirect_uri",
-                        "http://localhost:8088/oauthclient/oauth?method=token"));
+                        selfUrl + selfContext + "/oauth?method=token"));
                 httpPost.setEntity(new UrlEncodedFormEntity(nvps));
                 String authorization = clientId + ":" + clientSecret;
                 byte[] encodedBytes = Base64.encodeBase64(authorization.getBytes());
@@ -101,41 +105,64 @@ public class OauthServlet extends HttpServlet {
                     response2.close();
                 }
 
-                String entity = "{\"label\" : \"Unnamed entity\"}";
-
-                httpPost = new HttpPost("http://localhost:8080/entity");
-                httpPost.setEntity(new StringEntity(entity));
-                httpPost.setHeader("Content-type", "application/json; charset=UTF-8");
-
-                authorization = "Bearer " + token;
-                httpPost.setHeader("Authorization", authorization);
-                response2 = httpclient.execute(httpPost);
-                HttpEntity entity2 = response2.getEntity();
-                test = EntityUtils.toString(entity2);
-                System.out.println(test);
-
-                HttpGet httpGet = new HttpGet("http://localhost:8080/entity/" + test);
-                httpGet.setHeader("Authorization", authorization);
-                response2 = httpclient.execute(httpGet);
-                entity2 = response2.getEntity();
-                test = EntityUtils.toString(entity2);
-                System.out.println(test);
+                request.getSession().setAttribute(accessTokenAttributeName, token);
 
                 PrintWriter out = response.getWriter();
                 out.println("<html>");
                 out.println("<body>");
-                out.println(token);
+                out.println("logged in, token is " + token);
                 out.println("</body>");
                 out.println("</html>");
             } catch (OAuthProblemException e) {
                 throw new IOException(e.getMessage());
             }
         }
-        else if (request.getParameter("method").equals("drei")) {
+        else if (request.getParameter("method").equals("create")) {
+            String token = (String) request.getSession().getAttribute(accessTokenAttributeName);
+
+            String entity = "{\"label\" : \"Unnamed entity\"}";
+
+            CloseableHttpClient httpclient = HttpClients.createDefault();
+            HttpPost httpPost = new HttpPost(baseUrl + "/entity");
+            httpPost.setEntity(new StringEntity(entity));
+            httpPost.setHeader("Content-type", "application/json; charset=UTF-8");
+
+            if (token != null && !token.isEmpty()) {
+                String authorization = "Bearer " + token;
+                httpPost.setHeader("Authorization", authorization);
+            }
+            CloseableHttpResponse response2 = httpclient.execute(httpPost);
+            HttpEntity entity2 = response2.getEntity();
+            String test = EntityUtils.toString(entity2);
+            System.out.println(test);
             PrintWriter out = response.getWriter();
             out.println("<html>");
             out.println("<body>");
-            out.println("<h1>drei</h1>");
+            out.println("<h1>" + test + "</h1>");
+            out.println("</body>");
+            out.println("</html>");
+        }
+        else {
+            String token = (String) request.getSession().getAttribute(accessTokenAttributeName);
+
+            CloseableHttpClient httpclient = HttpClients.createDefault();
+            String method = request.getParameter("method");
+            if (!method.startsWith("/")) {
+                method = "/" + method;
+            }
+            HttpGet httpGet = new HttpGet(baseUrl + method);
+            if (token != null && !token.isEmpty()) {
+                String authorization = "Bearer " + token;
+                httpGet.setHeader("Authorization", authorization);
+            }
+            CloseableHttpResponse response2 = httpclient.execute(httpGet);
+            HttpEntity entity2 = response2.getEntity();
+            String test = EntityUtils.toString(entity2);
+            System.out.println(test);
+            PrintWriter out = response.getWriter();
+            out.println("<html>");
+            out.println("<body>");
+            out.println("<h1>" + test + "</h1>");
             out.println("</body>");
             out.println("</html>");
         }
