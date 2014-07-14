@@ -123,7 +123,7 @@ public class OauthServlet extends HttpServlet {
             String entity = "{\"label\" : \"Unnamed entity\"}";
 
             CloseableHttpClient httpclient = HttpClients.createDefault();
-            HttpPost httpPost = new HttpPost(baseUrl + "/entity");
+            HttpPost httpPost = new HttpPost(baseUrl + "/api/entity");
             httpPost.setEntity(new StringEntity(entity));
             httpPost.setHeader("Content-type", "application/json; charset=UTF-8");
 
@@ -150,7 +150,7 @@ public class OauthServlet extends HttpServlet {
             if (!method.startsWith("/")) {
                 method = "/" + method;
             }
-            HttpGet httpGet = new HttpGet(baseUrl + method);
+            HttpGet httpGet = new HttpGet(baseUrl + "/api" + method);
             if (token != null && !token.isEmpty()) {
                 String authorization = "Bearer " + token;
                 httpGet.setHeader("Authorization", authorization);
