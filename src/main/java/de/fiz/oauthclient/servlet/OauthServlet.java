@@ -134,11 +134,11 @@ public class OauthServlet extends HttpServlet {
             CloseableHttpResponse response2 = httpclient.execute(httpPost);
             HttpEntity entity2 = response2.getEntity();
             String test = EntityUtils.toString(entity2);
-            System.out.println(test);
             PrintWriter out = response.getWriter();
             out.println("<html>");
             out.println("<body>");
-            out.println("<h1>" + test + "</h1>");
+            out.println("status: " + response.getStatus());
+            out.println("response-text: " + test);
             out.println("</body>");
             out.println("</html>");
         }
@@ -158,11 +158,11 @@ public class OauthServlet extends HttpServlet {
             CloseableHttpResponse response2 = httpclient.execute(httpGet);
             HttpEntity entity2 = response2.getEntity();
             String test = EntityUtils.toString(entity2);
-            System.out.println(test);
             PrintWriter out = response.getWriter();
             out.println("<html>");
             out.println("<body>");
-            out.println("<h1>" + test + "</h1>");
+            out.println("status: " + response.getStatus());
+            out.println("response-text: " + test);
             out.println("</body>");
             out.println("</html>");
         }
