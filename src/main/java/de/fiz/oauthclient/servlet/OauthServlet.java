@@ -150,7 +150,10 @@ public class OauthServlet extends HttpServlet {
             if (!method.startsWith("/")) {
                 method = "/" + method;
             }
-            HttpGet httpGet = new HttpGet(baseUrl + "/api" + method);
+            if (!method.startsWith("/api")) {
+                method = "/api" + method;
+            }
+            HttpGet httpGet = new HttpGet(baseUrl + method);
             if (token != null && !token.isEmpty()) {
                 String authorization = "Bearer " + token;
                 httpGet.setHeader("Authorization", authorization);
