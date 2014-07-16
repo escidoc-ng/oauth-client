@@ -165,6 +165,40 @@ public class OauthServlet extends HttpServlet {
             out.println("</body>");
             out.println("</html>");
         }
+        else if (request.getParameter("method").equals("logout")) {
+            String token = (String) request.getSession().getAttribute(accessTokenAttributeName);
+            CloseableHttpClient httpclient = HttpClients.createDefault();
+            HttpPost httpPost = new HttpPost(baseUrl + "/logout");
+            if (token != null && !token.isEmpty()) {
+                String authorization = "Bearer " + token;
+                httpPost.setHeader("Authorization", authorization);
+            }
+            CloseableHttpResponse response2 = httpclient.execute(httpPost);
+            HttpEntity entity2 = response2.getEntity();
+            String test = EntityUtils.toString(entity2);
+            System.out.println(response2.getStatusLine().toString());
+            System.out.println(test);
+
+            String entity = "{\"label\" : \"Unnamed entity\"}";
+            httpPost = new HttpPost(baseUrl + "/entity");
+            httpPost.setEntity(new StringEntity(entity));
+            httpPost.setHeader("Content-type", "application/json; charset=UTF-8");
+
+            if (token != null && !token.isEmpty()) {
+                String authorization = "Bearer " + token;
+                httpPost.setHeader("Authorization", authorization);
+            }
+            response2 = httpclient.execute(httpPost);
+            entity2 = response2.getEntity();
+            test = EntityUtils.toString(entity2);
+            PrintWriter out = response.getWriter();
+            out.println("<html>");
+            out.println("<body>");
+            out.println("status: " + response2.getStatusLine().toString() + "<br>");
+            out.println("response-text: " + test);
+            out.println("</body>");
+            out.println("</html>");
+        }
         else {
             String token = (String) request.getSession().getAttribute(accessTokenAttributeName);
 
