@@ -32,6 +32,7 @@ import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
@@ -48,15 +49,23 @@ import org.json.JSONObject;
  */
 public class OauthServlet extends HttpServlet {
 
+    String baseUrl = "http://localhost:8080";
+
+    String selfUrl = "http://localhost:8088";
+
+    String selfContext = "/oauthclient";
+
+    String clientId = "larch_admin";
+
+    String clientSecret = "secret";
+
+    String accessTokenAttributeName = "access-token";
+
+    String authorization = "user:user";
+
     @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response)
             throws IOException {
-        String baseUrl = "http://localhost:8080";
-        String selfUrl = "http://localhost:8088";
-        String selfContext = "/oauthclient";
-        String clientId = "larch_admin";
-        String clientSecret = "secret";
-        String accessTokenAttributeName = "access-token";
 
         if (request.getParameter("method").equals("login")) {
             try {
@@ -118,8 +127,6 @@ public class OauthServlet extends HttpServlet {
             }
         }
         else if (request.getParameter("method").equals("create")) {
-            String token = (String) request.getSession().getAttribute(accessTokenAttributeName);
-
             String entity = "{\"label\" : \"Unnamed entity\"}";
 
             CloseableHttpClient httpclient = HttpClients.createDefault();
@@ -127,33 +134,7 @@ public class OauthServlet extends HttpServlet {
             httpPost.setEntity(new StringEntity(entity));
             httpPost.setHeader("Content-type", "application/json; charset=UTF-8");
 
-            if (token != null && !token.isEmpty()) {
-                String authorization = "Bearer " + token;
-                httpPost.setHeader("Authorization", authorization);
-            }
-            CloseableHttpResponse response2 = httpclient.execute(httpPost);
-            HttpEntity entity2 = response2.getEntity();
-            String test = EntityUtils.toString(entity2);
-            PrintWriter out = response.getWriter();
-            out.println("<html>");
-            out.println("<body>");
-            out.println("status: " + response2.getStatusLine().toString() + "<br>");
-            out.println("response-text: " + test);
-            out.println("</body>");
-            out.println("</html>");
-        }
-        else if (request.getParameter("method").equals("httpauth")) {
-            String entity = "{\"label\" : \"Unnamed entity\"}";
-
-            CloseableHttpClient httpclient = HttpClients.createDefault();
-            HttpPost httpPost = new HttpPost(baseUrl + "/entity");
-            httpPost.setEntity(new StringEntity(entity));
-            httpPost.setHeader("Content-type", "application/json; charset=UTF-8");
-
-            String authorization = "user:user";
-            byte[] encodedBytes = Base64.encodeBase64(authorization.getBytes());
-            authorization = "Basic " + new String(encodedBytes);
-            httpPost.setHeader("Authorization", authorization);
+            setAuthHeader(request, httpPost);
             CloseableHttpResponse response2 = httpclient.execute(httpPost);
             HttpEntity entity2 = response2.getEntity();
             String test = EntityUtils.toString(entity2);
@@ -166,13 +147,9 @@ public class OauthServlet extends HttpServlet {
             out.println("</html>");
         }
         else if (request.getParameter("method").equals("logout")) {
-            String token = (String) request.getSession().getAttribute(accessTokenAttributeName);
             CloseableHttpClient httpclient = HttpClients.createDefault();
             HttpPost httpPost = new HttpPost(baseUrl + "/logout");
-            if (token != null && !token.isEmpty()) {
-                String authorization = "Bearer " + token;
-                httpPost.setHeader("Authorization", authorization);
-            }
+            setAuthHeader(request, httpPost);
             CloseableHttpResponse response2 = httpclient.execute(httpPost);
             HttpEntity entity2 = response2.getEntity();
             String test = EntityUtils.toString(entity2);
@@ -184,10 +161,7 @@ public class OauthServlet extends HttpServlet {
             httpPost.setEntity(new StringEntity(entity));
             httpPost.setHeader("Content-type", "application/json; charset=UTF-8");
 
-            if (token != null && !token.isEmpty()) {
-                String authorization = "Bearer " + token;
-                httpPost.setHeader("Authorization", authorization);
-            }
+            setAuthHeader(request, httpPost);
             response2 = httpclient.execute(httpPost);
             entity2 = response2.getEntity();
             test = EntityUtils.toString(entity2);
@@ -200,18 +174,13 @@ public class OauthServlet extends HttpServlet {
             out.println("</html>");
         }
         else {
-            String token = (String) request.getSession().getAttribute(accessTokenAttributeName);
-
             CloseableHttpClient httpclient = HttpClients.createDefault();
             String method = request.getParameter("method");
             if (!method.startsWith("/")) {
                 method = "/" + method;
             }
             HttpGet httpGet = new HttpGet(baseUrl + method);
-            if (token != null && !token.isEmpty()) {
-                String authorization = "Bearer " + token;
-                httpGet.setHeader("Authorization", authorization);
-            }
+            setAuthHeader(request, httpGet);
             CloseableHttpResponse response2 = httpclient.execute(httpGet);
             HttpEntity entity2 = response2.getEntity();
             String test = EntityUtils.toString(entity2);
@@ -222,6 +191,26 @@ public class OauthServlet extends HttpServlet {
             out.println("response-text: " + test);
             out.println("</body>");
             out.println("</html>");
+        }
+    }
+
+    private void setAuthHeader(HttpServletRequest request, HttpRequestBase method) {
+        if ("token".equals(request.getParameter("authtype"))) {
+            String token = (String) request.getSession().getAttribute(accessTokenAttributeName);
+            if (token != null && !token.isEmpty()) {
+                String authorization = "Bearer " + token;
+                method.setHeader("Authorization", authorization);
+            }
+        } else {
+            String authorization;
+            if (request.getParameter("authstring") != null) {
+                authorization = request.getParameter("authstring");
+            } else {
+                authorization = this.authorization;
+            }
+            byte[] encodedBytes = Base64.encodeBase64(authorization.getBytes());
+            authorization = "Basic " + new String(encodedBytes);
+            method.setHeader("Authorization", authorization);
         }
     }
 }
