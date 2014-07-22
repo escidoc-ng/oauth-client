@@ -63,6 +63,8 @@ public class OauthServlet extends HttpServlet {
 
     String authorization = "user:user";
 
+    String entity = "{\"label\" : \"Unnamed entity\"}";
+
     @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response)
             throws IOException {
@@ -127,8 +129,6 @@ public class OauthServlet extends HttpServlet {
             }
         }
         else if (request.getParameter("method").equals("create")) {
-            String entity = "{\"label\" : \"Unnamed entity\"}";
-
             CloseableHttpClient httpclient = HttpClients.createDefault();
             HttpPost httpPost = new HttpPost(baseUrl + "/entity");
             httpPost.setEntity(new StringEntity(entity));
@@ -156,7 +156,6 @@ public class OauthServlet extends HttpServlet {
             System.out.println(response2.getStatusLine().toString());
             System.out.println(test);
 
-            String entity = "{\"label\" : \"Unnamed entity\"}";
             httpPost = new HttpPost(baseUrl + "/entity");
             httpPost.setEntity(new StringEntity(entity));
             httpPost.setHeader("Content-type", "application/json; charset=UTF-8");
