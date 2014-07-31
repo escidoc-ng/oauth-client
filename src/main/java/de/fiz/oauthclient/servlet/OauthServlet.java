@@ -45,7 +45,19 @@ import org.apache.oltu.oauth2.common.exception.OAuthSystemException;
 import org.json.JSONObject;
 
 /**
- * @author mih
+ * @author mih <br>
+ *         Requests: <br>
+ *         ?method=login: sends redirect to ?method=token <br>
+ *         ?method=token: sends oauth-token-request, puts token in session and displays token on page <br>
+ * <br>
+ *         Methods with Auth-Header:<br>
+ *         if parameter authtype=token set, send request with token in Header.<br>
+ *         Otherwise send request with Basic-Auth Header.<br>
+ *         if parameter authstring=admin:admin provided, take that otherwise take user:user<br>
+ * <br>
+ *         ?method=create: create entity and display values<br>
+ *         ?method=logout: logout and then try creating an entity<br>
+ *         eg ?method=/entity/dfgdgdg: send get-request to larch<br>
  */
 public class OauthServlet extends HttpServlet {
 
