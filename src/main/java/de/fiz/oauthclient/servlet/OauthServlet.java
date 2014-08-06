@@ -55,9 +55,9 @@ import org.json.JSONObject;
  *         Otherwise send request with Basic-Auth Header.<br>
  *         if parameter authstring=admin:admin provided, take that otherwise take user:user<br>
  * <br>
- *         ?method=create: create entity and display values<br>
+ *         ?method=create&workspaceId=jhfdfd: create entity and display values<br>
  *         ?method=logout: logout and then try creating an entity<br>
- *         eg ?method=/entity/dfgdgdg: send get-request to larch<br>
+ *         eg ?method=/workspace/wfgwg/entity/dfgdgdg: send get-request to larch<br>
  */
 public class OauthServlet extends HttpServlet {
 
@@ -142,7 +142,8 @@ public class OauthServlet extends HttpServlet {
         }
         else if (request.getParameter("method").equals("create")) {
             CloseableHttpClient httpclient = HttpClients.createDefault();
-            HttpPost httpPost = new HttpPost(baseUrl + "/entity");
+            HttpPost httpPost =
+                    new HttpPost(baseUrl + "/workspace/" + request.getParameter("workspaceId") + "/entity");
             httpPost.setEntity(new StringEntity(entity));
             httpPost.setHeader("Content-type", "application/json; charset=UTF-8");
 
