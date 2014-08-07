@@ -77,6 +77,8 @@ public class OauthServlet extends HttpServlet {
 
     String entity = "{\"label\" : \"Unnamed entity\"}";
 
+    String workspace = "{\"name\" : \"Unnamed workspace\"}";
+
     @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response)
             throws IOException {
@@ -145,6 +147,25 @@ public class OauthServlet extends HttpServlet {
             HttpPost httpPost =
                     new HttpPost(baseUrl + "/workspace/" + request.getParameter("workspaceId") + "/entity");
             httpPost.setEntity(new StringEntity(entity));
+            httpPost.setHeader("Content-type", "application/json; charset=UTF-8");
+
+            setAuthHeader(request, httpPost);
+            CloseableHttpResponse response2 = httpclient.execute(httpPost);
+            HttpEntity entity2 = response2.getEntity();
+            String test = EntityUtils.toString(entity2);
+            PrintWriter out = response.getWriter();
+            out.println("<html>");
+            out.println("<body>");
+            out.println("status: " + response2.getStatusLine().toString() + "<br>");
+            out.println("response-text: " + test);
+            out.println("</body>");
+            out.println("</html>");
+        }
+        else if (request.getParameter("method").equals("createws")) {
+            CloseableHttpClient httpclient = HttpClients.createDefault();
+            HttpPost httpPost =
+                    new HttpPost(baseUrl + "/workspace/");
+            httpPost.setEntity(new StringEntity(workspace));
             httpPost.setHeader("Content-type", "application/json; charset=UTF-8");
 
             setAuthHeader(request, httpPost);
